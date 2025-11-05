@@ -2,4 +2,4 @@
 HTML Code Programmed To make a HTML Bot Do What You Request.
 
 # How To Use 
-- Just Paste the **index.html** Code to the dev console that's it :)
+- Just Drag the **index.html** File to the Linux File that's it :)
