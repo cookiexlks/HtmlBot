@@ -1,20 +1,220 @@
-<div class="chatbot-container">
-  
-    <div class="chat-window">
-      
-        <div class="message bot-message">
-            <p>Hello! How can I help you today?</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Helper Bot</title>
+    <!-- 1. Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. Set up the Inter font family -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <!-- 3. Add some custom styles for the chat UI height -->
+    <style>
+        /* Set a specific height for the chat card and make the chat window scrollable */
+        /* We use vh (viewport height) to make it responsive */
+        @media (min-height: 600px) {
+            #chat-card {
+                height: 70vh;
+                max-height: 700px;
+            }
+        }
+        /* A class to ensure smooth scrolling */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
+
+    <!-- Chatbot Container -->
+    <div id="chat-card" class="w-full max-w-lg bg-white rounded-xl shadow-2xl flex flex-col">
+
+        <!-- Header -->
+        <div class="border-b p-4 sm:p-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 text-center">HTML Helper Bot</h1>
+            <p class="text-sm text-gray-500 text-center mt-1">Ask me anything about basic HTML!</p>
         </div>
-        
-        <div class="message user-message">
-            <p>I have a question about HTML.</p>
+
+        <!-- Chat Window (where messages appear) -->
+        <div id="chat-window" class="flex-1 p-4 sm:p-6 space-y-4 overflow-y-auto smooth-scroll">
+            
+            <!-- Initial bot greeting -->
+            <div class="flex">
+                <div class="bg-indigo-500 text-white p-3 rounded-lg rounded-bl-none shadow-md max-w-[85%] sm:max-w-[80%]">
+                    <p class="text-sm sm:text-base">Hello! I'm a bot who knows about HTML. Ask me a question like "What is HTML?" or "How do I make a link?".</p>
+                </div>
+            </div>
+
+            <!-- Messages will be added here by JavaScript -->
+
+        </div>
+
+        <!-- Input Area -->
+        <div class="border-t p-4 sm:p-6 bg-gray-50 rounded-b-xl">
+            <div class="flex space-x-3">
+                <input type="text" id="user-input" class="flex-1 border rounded-lg px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Type your message...">
+                <button id="send-button" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold text-sm sm:text-base hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition shadow-md">
+                    Send
+                </button>
+            </div>
         </div>
 
     </div>
 
-    <div class="input-area">
-        <input type="text" class="user-input" placeholder="Type your message...">
-        <button class="send-button">Send</button>
-    </div>
+    <!-- 4. The JavaScript "Brain" for the Bot -->
+    <script>
+        // Get references to the HTML elements we need
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
 
-</div> 
+        // Add event listener for the Send button
+        sendButton.addEventListener('click', sendMessage);
+
+        // Add event listener for the 'Enter' key in the input field
+        userInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        /**
+         * Handles sending a message from the user
+         */
+        function sendMessage() {
+            const messageText = userInput.value.trim();
+
+            // If the message isn't empty
+            if (messageText !== '') {
+                // 1. Display the user's message
+                displayMessage(messageText, 'user');
+
+                // 2. Clear the input field
+                userInput.value = '';
+
+                // 3. Get and display the bot's response (with a slight delay for realism)
+                setTimeout(() => {
+                    const botResponse = getBotResponse(messageText);
+                    displayMessage(botResponse, 'bot');
+                }, 400); // 400ms delay
+            }
+        }
+
+        /**
+         * Creates a new message bubble and adds it to the chat window
+         * @param {string} message - The text content of the message
+         * @param {string} sender - 'user' or 'bot'
+         */
+        function displayMessage(message, sender) {
+            // Create the main wrapper div
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('flex');
+
+            // Create the message bubble
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('p-3', 'rounded-lg', 'shadow-md', 'max-w-[85%]', 'sm:max-w-[80%]');
+            
+            // Create the paragraph for the text
+            const messageParagraph = document.createElement('p');
+            messageParagraph.classList.add('text-sm', 'sm:text-base');
+            messageParagraph.textContent = message;
+            
+            messageBubble.appendChild(messageParagraph);
+
+            // Apply different styles based on the sender
+            if (sender === 'user') {
+                messageWrapper.classList.add('justify-end'); // Align user messages to the right
+                messageBubble.classList.add('bg-gray-200', 'text-gray-800', 'rounded-br-none');
+            } else {
+                // Bot messages are aligned left by default
+                messageBubble.classList.add('bg-indigo-500', 'text-white', 'rounded-bl-none');
+            }
+
+            // Add the bubble to the wrapper, and the wrapper to the chat window
+            messageWrapper.appendChild(messageBubble);
+            chatWindow.appendChild(messageWrapper);
+
+            // Automatically scroll to the bottom of the chat window
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        /**
+         * The core "brain" of the bot. It takes the user's input
+         * and returns a specific response.
+         * @param {string} input - The user's raw message text
+         * @returns {string} - The bot's response
+         */
+        function getBotResponse(input) {
+            const normalizedInput = input.toLowerCase().trim();
+
+            // --- Define Bot's Knowledge Base ---
+
+            if (normalizedInput.includes('hello') || normalizedInput.includes('hi')) {
+                return "Hi there! What HTML question can I help you with?";
+            }
+
+            if (normalizedInput.includes('what is html') || normalizedInput.includes('define html')) {
+                return "HTML stands for HyperText Markup Language. It's the standard language used to create and structure the content of web pages.";
+            }
+
+            if (normalizedInput.includes('tag')) {
+                return "HTML tags are like keywords that define how a web browser will format and display content. Most tags have an opening tag like <h1> and a closing tag like </h1>.";
+            }
+
+            if (normalizedInput.includes('heading')) {
+                return "Headings are defined with <h1> to <h6> tags. <h1> is the most important heading (usually the main title), and <h6> is the least important.";
+            }
+
+            if (normalizedInput.includes('paragraph') || normalizedInput.includes('<p>')) {
+                return "You create a paragraph in HTML with the <p> tag. For example: <p>This is a paragraph.</p>";
+            }
+
+            if (normalizedInput.includes('image') || normalizedInput.includes('img')) {
+                return "To add an image, you use the <img> tag. It's a self-closing tag. You must include the 'src' (source) attribute, like this: <img src='image.jpg' alt='description'>";
+            }
+
+            if (normalizedInput.includes('link') || normalizedInput.includes('anchor') || normalizedInput.includes('href')) {
+                return "To create a link, you use the anchor <a> tag. The 'href' attribute specifies the URL: <a href='https://www.google.com'>Click me!</a>";
+            }
+
+            if (normalizedInput.includes('list')) {
+                return "There are two main types: Unordered lists <ul> (for bullet points) and Ordered lists <ol> (for numbered lists). Both use <li> (list item) tags inside them.";
+            }
+
+            if (normalizedInput.includes('div')) {
+                return "A <div> is a generic 'division' or container. It's a block-level element used to group other HTML elements together, often for styling with CSS.";
+            }
+
+            if (normalizedInput.includes('span')) {
+                return "A <span> is a generic inline container. It's used to group parts of text or other inline elements, usually to apply specific styles (like color) to just that part.";
+            }
+
+            if (normalizedInput.includes('css')) {
+                return "My expertise is HTML, but CSS (Cascading Style Sheets) is the language used to style your HTML elements, controlling colors, fonts, and layout.";
+            }
+            
+            if (normalizedInput.includes('javascript') || normalizedInput.includes('js')) {
+                return "That's me! JavaScript is the programming language used to make web pages interactive. I'm running on JavaScript right now!";
+            }
+
+            if (normalizedInput.includes('bye') || normalizedInput.includes('thanks')) {
+                return "You're welcome! Happy coding!";
+            }
+
+            // --- Default Response ---
+            return "I'm sorry, I don't have an answer for that. Try asking me about tags, links, images, or lists!";
+        }
+
+    </script>
+</body>
+</html>
